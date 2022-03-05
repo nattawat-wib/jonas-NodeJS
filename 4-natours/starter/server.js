@@ -4,7 +4,6 @@ const dotenv = require("dotenv");
 dotenv.config({path: "./config.env"})
 const app = require("./app");
 
-
 // CONTENT MONGO ATLAS
 const DB = process.env.DATABASE.replace("<password>", process.env.DATABASE_PASSWORD)
 const DB_local = process.env.DATABASE_LOCAL
@@ -14,7 +13,7 @@ mongoose.connect(DB, {
     useCreateIndex: true,
     useFindAndModify: false,
     useUnifiedTopology: true
-}).then(() => console.log("DB connection succesfully"))
+}).then(() => console.log("DB connection successfully"))
 
 // CREATE SERVER
 const port = process.env.PORT || 3000;
