@@ -103,16 +103,16 @@ tourSchema.virtual("durationWeeks").get(function() {
 // })
 
 // // Query middleware
-// tourSchema.pre(/^find/, function(next) {
-//     this.find({ secretTour: { $ne: true } })
-//     this.start = Date.now();
-//     next();
-// })
+tourSchema.pre(/^find/, function(next) {
+    this.find({ secretTour: { $ne: true } })
+    this.start = Date.now();
+    next();
+})
 
-// tourSchema.post(/^find/, function(doc, next) {
-//     console.log(`take time : ${Date.now() - this.start} millisecond`)
-//     next();
-// })
+tourSchema.post(/^find/, function(doc, next) {
+    console.log(`take time : ${Date.now() - this.start} millisecond`)
+    next();
+})
 
 // // Aggregate middleware
 // tourSchema.pre("aggregate", function(next) {
