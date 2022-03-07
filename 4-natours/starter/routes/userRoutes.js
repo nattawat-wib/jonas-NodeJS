@@ -6,9 +6,12 @@ const authController = require("./../controllers/authController")
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 
+router.post("/forget-password", authController.forget_password);
+router.post("/reset-password", authController.reset_password);
+
 router
     .route("/")
-    .get(userController.get_all_users)
+    .get(authController.protect, userController.get_all_users)
     .post(userController.create_user)
 
 router

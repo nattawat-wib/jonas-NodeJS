@@ -17,6 +17,9 @@ const handleValidationDB = err => {
     return new AppError(message, 400)
 }
 
+const handleJWTError = () => new AppError("Invalid token please login")
+const handleJWTExpiredError = () => new AppError("Ypur token has expxpired please login again")
+
 const send_error_dev = (err, res) => {
     res.status(err.statusCode).json({
         status: err.status,
@@ -61,6 +64,10 @@ module.exports = (err, req, res, next) => {
         else if(error.code === 11000) error = handleDuplicateFieldsDB(error);
         // For validate value error
         else if(error.name === "ValidationError") error = handleValidationDB(error);
+        // For JWT
+        else if(error.name === "JsonWebTokenError") error = handleJWTError();
+        // For JWT Expired
+        else if(error.name === "TokenExpiredError") error = handleJWTExpiredError();
 
         send_error_prod(error, res)
     }
