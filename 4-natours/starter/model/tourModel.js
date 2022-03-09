@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
-const validator = require("validator");
+// const validator = require("validator");
+// const User = require("./userModel");
 
 const tourSchema = new mongoose.Schema({
     name: {
@@ -46,7 +47,7 @@ const tourSchema = new mongoose.Schema({
     priceDiscount: {
         type: Number,
         validate: {
-            validator: function(val) {
+            validator: function (val) {
                 return val < this.price;
             },
             message: "Discount price {VALUE} should be below regular price"
@@ -61,7 +62,7 @@ const tourSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    imageCover : {
+    imageCover: {
         type: String,
         required: [true, "A tour must have a cover image"]
     },
@@ -75,20 +76,69 @@ const tourSchema = new mongoose.Schema({
     secretTour: {
         type: Boolean,
         default: false
-    }
+    },
+    startLocation: {
+        // GeoJSON
+        type: {
+            type: String,
+            default: "Point",
+            enum: ["Point"]
+        },
+        coordinates: [Number],
+        address: String,
+        description: String
+    },
+    locations: [
+        {
+            type: {
+                type: String,
+                default: "Point",
+                enum: ["Point"]
+            },
+            coordinates: [Number],
+            address: String,
+            description: String,
+            day: Number
+        }
+    ],
+    guides: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: "User"
+        }
+    ],
+    // reviews: [
+    //     {
+    //         type: mongoose.Schema.ObjectId,
+    //         ref: "Review"
+    //     }
+    // ]
 },
 {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
 })
 
-tourSchema.virtual("durationWeeks").get(function() {
+tourSchema.virtual("durationWeeks").get(function () {
     return this.duration / 7
 })
 
+// Virtual Populate
+tourSchema.virtual('reviews', {
+    ref: 'Review',
+    localField: '_id',
+    foreignField: 'tour'
+});
+
 // // Middleware run before .save() .create()
-// tourSchema.pre("save", function(next) {
-//     this.slug = slugify(this.name, {lower: true})
+tourSchema.pre("save", function (next) {
+    this.slug = slugify(this.name, { lower: true })
+    next();
+})
+
+// tourSchema.pre("save", async function(next) {
+//     const guidesPromise = this.guides.map(async id => await User.findById(id));
+//     this.guides = await Promise.all(guidesPromise);
 //     next();
 // })
 
@@ -103,13 +153,21 @@ tourSchema.virtual("durationWeeks").get(function() {
 // })
 
 // // Query middleware
-tourSchema.pre(/^find/, function(next) {
+tourSchema.pre(/^find/, function (next) {
     this.find({ secretTour: { $ne: true } })
     this.start = Date.now();
     next();
 })
 
-tourSchema.post(/^find/, function(doc, next) {
+tourSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: "guides",
+        select: "-__v -passwordChangeAt"
+    });
+    next();
+})
+
+tourSchema.post(/^find/, function (doc, next) {
     console.log(`take time : ${Date.now() - this.start} millisecond`)
     next();
 })

@@ -52,7 +52,7 @@ exports.delete_account = catchAsync(async (req, res, next) => {
 })
 
 exports.get_user = catchAsync(async (req, res) => {
-    const user = await User.find();
+    const user = await User.findById(req.params.id);
 
     res.status(500).json({
         status: "success",
