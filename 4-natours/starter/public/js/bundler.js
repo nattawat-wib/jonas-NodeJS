@@ -8908,17 +8908,42 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.display_map = void 0;
 
-var display_map = function display_map(location) {
+var display_map = function display_map(locations) {
   mapboxgl.accessToken = 'pk.eyJ1IjoibnV0ZWxsYS13aWIiLCJhIjoiY2wwbnk5N2U4MWpiNTNkbnNybGxwcTRrOCJ9.ahm_w8GdQag94SAQ2xtC4w';
   var map = new mapboxgl.Map({
     container: 'map',
     // container ID
-    style: 'mapbox://styles/mapbox/streets-v11',
+    style: 'mapbox://styles/nutella-wib/cl0pgmji8001514n0edv0ejyt',
     // style URL
-    center: [-74.5, 40],
-    // starting position [lng, lat]
-    zoom: 9 // starting zoom
+    scrollZoom: false // center: [-74.5, 40], // starting position [lng, lat]
+    // zoom: 10, // starting zoom
+    // interactive: false,
 
+  });
+  var bounds = new mapboxgl.LngLatBounds();
+  locations.forEach(function (loc) {
+    // Create Marker
+    var el = document.createElement("div");
+    el.className = "marker"; // Add Marker
+
+    new mapboxgl.Marker({
+      element: el,
+      anchor: "bottom"
+    }).setLngLat(loc.coordinates).addTo(map); // Add popup
+
+    new mapboxgl.Popup({
+      offset: 30
+    }).setLngLat(loc.coordinates).setHTML("<p> Day ".concat(loc.day, ": ").concat(loc.description, " </p>")).addTo(map); // Extend map
+
+    bounds.extend(loc.coordinates);
+  });
+  map.fitBounds(bounds, {
+    padding: {
+      top: 200,
+      bottom: 200,
+      left: 100,
+      right: 100
+    }
   });
 };
 
@@ -9333,12 +9358,14 @@ var login_from = document.querySelector(".form--login");
 var logout_btn = document.querySelector(".nav__el--logout");
 var form_user_data = document.querySelector(".form-user-data");
 var form_user_password = document.querySelector(".form-user-settings");
-var book_btn = document.getElementById("book-tour"); // const mapBox = document.getElementById("map");
-// if(mapBox) {
-//     const locations = JSON.parse(mapBox.dataset.locations);
-//     console.log(locations)
-//     display_map(locations)
-// }
+var book_btn = document.getElementById("book-tour");
+var mapBox = document.getElementById("map");
+
+if (mapBox) {
+  var locations = JSON.parse(mapBox.dataset.locations);
+  console.log(locations);
+  (0, _mapbox.display_map)(locations);
+}
 
 if (login_from) {
   login_from.addEventListener("submit", function (e) {
@@ -9438,7 +9465,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54011" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55186" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
