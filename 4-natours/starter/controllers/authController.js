@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("./../model/userModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
-const sendEmail = require("./../utils/email");
+const Email = require("./../utils/email");
 
 const signToken = id => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -16,7 +16,7 @@ const signToken = id => {
 const createSentToken = (user, statusCode, res) => {
     const token = signToken(user.id);
     const cookieOptions = {
-        expirse: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
         httpOnly: true
     }
     if(process.env.NODE_ENV == "production") cookieOptions.secure = true
@@ -39,9 +39,13 @@ exports.signup = catchAsync(async (req, res, next) => {
         email: req.body.email,
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm,
-        // passwordChangeAt: req.body.passwordChangeAt,
         role: req.body.role
     })
+
+    const url = `${req.protocol}://${req.get("host")}/account`;
+
+    console.log("url")
+    await new Email(new_user, url).sendWelcome();
 
     createSentToken(new_user, 201, res);
 })
@@ -60,6 +64,15 @@ exports.login = catchAsync(async (req, res, next) => {
 
     // 3) sent token back to client 
     createSentToken(user, 201, res);
+})
+
+exports.logout = catchAsync(async (req, res, next) => {
+    res.cookie("jwt", "logout", {
+        expires: new Date(Date.now() + 10 * 1000),
+        httpOnly: true
+    })
+
+    res.status(200).json({ status: "success" })
 })
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -84,13 +97,16 @@ exports.protect = catchAsync(async (req, res, next) => {
     // 4) check if user change password after issue
     if (current_user.changePasswordAfter(decoded.iat)) return next(new AppError("User recently change password!", 400));
 
-    req.user = current_user
+    req.user = current_user;
+    res.locals.user = current_user;
     next()
 })
 
 // Only for render pages
 exports.isLoggedIn = catchAsync(async (req, res, next) => {
-    if (req.cookies.jwt) {
+    if (!req.cookies.jwt) return next();
+
+    try{
         // 1) verify token
         const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET)
 
@@ -103,9 +119,9 @@ exports.isLoggedIn = catchAsync(async (req, res, next) => {
 
         res.locals.user = current_user;
         return next();
+    } catch (e) {
+        return next();
     }
-    
-    next();
 })
 
 exports.restrict_to = (...roles) => {
@@ -119,6 +135,7 @@ exports.forget_password = catchAsync(async (req, res, next) => {
 
     // 1) check is user exist by email
     const user = await User.findOne({ email: req.body.email });
+
     if(!user) return next(new AppError("There is no user with this email", 404))
 
     // 2) Generate random reset token
@@ -127,18 +144,12 @@ exports.forget_password = catchAsync(async (req, res, next) => {
     await user.save({ validateBeforeSave: false })
 
     // 3) send email to user
-    const reset_URL = `${req.protocol}://${req.get("host")}/api/v1/users/reset-password/${reset_token}`
-    const message = `follow this url : ${reset_URL}`
-
     try {
-        await sendEmail({
-            email: user.email,
-            subject: "Your password reset token",
-            text: "some text",
-            message
-        })
+        const reset_URL = `${req.protocol}://${req.get("host")}/api/v1/users/reset-password/${reset_token}`
+        await new Email(user, reset_URL).sendPasswordReset()
+
         res.status(200).json({
-            stautus: "success",
+            status: "success",
             message: "Token sent to email"
         })
         

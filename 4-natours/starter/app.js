@@ -15,6 +15,8 @@ const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
 const viewRouter = require("./routes/viewRoutes");
+const bookingRouter = require("./routes/bookingRoutes");
+const logger = require('morgan');
 
 const app = express();
 
@@ -24,73 +26,56 @@ app.set("views", path.join(__dirname, "views"))
 // serving static file
 app.use(express.static(path.join(__dirname, "public")));
 
-// 1) MIDDLEWARES
-// set secure HTTP header
-// app.use(helmet())
-app.use(helmet({
-    crossOriginResourcePolicy: false,
-}))
 
-// Development logging
-if (process.env.NODE_ENV === "development") {
-    app.use(morgan("dev"))
-}
 
-// Limit request from same API
-const limiter = rateLimit({
-    max: 100,
-    windowMs: 60 * 60 * 1000,
-    message: "Too many request from this IP, please try again in an hour!"
-});
-app.use("/api", limiter);
 
-// Bpdy parser, reading data from body into req.body
-app.use(express.json({ limit: "10kb" }));
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Data sanizitation  from NoSQL query injection (remove $ ,)
-app.use(mongoSanitize());
 
-// Data sanizitation  from XSS
-app.use(xss());
 
-// Prevent parameter pullution
-app.use(hpp({
-    whitelist: ["duration", "ratingsQuantity", "ratingsQuantity", "maxGroupSize", "difficulty", "price"]
-}));
+// // 1) MIDDLEWARES
+// // set secure HTTP header
+// app.use(helmet({ crossOriginResourcePolicy: false }))
 
-app.use((req, res, next) => {
-    req.requestTime = new Date().toISOString();
-    next()
-})
+// // Development logging
+// if (process.env.NODE_ENV === "development") {
+//     app.use(morgan("dev"))
+// }
 
-// 3) ROUTE
-app.use((req, res, next) => {
-    res.setHeader(
-      'Content-Security-Policy',
-      "script-src  'self' connect.facebook.net maps.googleapis.com cdnjs.cloudflare.com cdn.quilljs.com *.aws",
-      "script-src-elem 'self' connect.facebook.net maps.googleapis.com cdnjs.cloudflare.com cdn.quilljs.com *.aws",
-      "style-src 'self' cdnjs.cloudflare.com; localhost:8000;",
-      "img-src 'self'"
-    );
-    next();
-  });
+// // Limit request from same API
+// const limiter = rateLimit({
+//     max: 100,
+//     windowMs: 60 * 60 * 1000,
+//     message: "Too many request from this IP, please try again in an hour!"
+// });
+// app.use("/api", limiter);
 
-app.use((req, res, next) => {
-    // console.log(req.cookies)
-    // res.setHeader(
-    //     'Content-Security-Policy',
-    //     "script-src  'self' api.mapbox.com",
-    //     "script-src-elem 'self' api.mapbox.com",
-    // );
-    
-    next();
-});
+// // Bpdy parser, reading data from body into req.body
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+// app.use(cookieParser());
+
+// // Data sanizitation  from NoSQL query injection (remove $ ,)
+// app.use(mongoSanitize());
+
+// // Data sanizitation  from XSS
+// app.use(xss());
+
+// // Prevent parameter pullution
+// app.use(hpp({
+//     whitelist: ["duration", "ratingsQuantity", "ratingsQuantity", "maxGroupSize", "difficulty", "price"]
+// }));
+
 
 app.use("/", viewRouter)
 app.use("/api/v1/tours", tourRouter)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/reviews", reviewRouter)
+app.use("/api/v1/bookings", bookingRouter)
 
 app.all("*", (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server`, 400))
