@@ -1,6 +1,7 @@
 const User = require("./../model/userModel");
 const catchAsync = require("./../utils/catchAsync");
 const AppError = require("./../utils/appError");
+const factory = require("./handlerFactory");
 
 const filterObj = (obj, ...allowedFields) => {
     const newObj = {};
@@ -11,19 +12,12 @@ const filterObj = (obj, ...allowedFields) => {
     return newObj
 }
 
-exports.get_all_users = catchAsync(async (req, res) => {
-    const users = await User.find();
+exports.get_my_account = (req, res, next) => {
+    req.params.id = req.user.id;
+    next();
+} 
 
-    res.status(500).json({
-        status: "success",
-        results: users.length,
-        data: {
-            users
-        }
-    })
-})
-
-exports.edit_profile = catchAsync(async (req, res, next) => {
+exports.update_my_account = catchAsync(async (req, res, next) => {
     // 1) Error if user try to edit password in this route 
     if(req.body.password || req.body.passwordConfirm) return next(new AppError("cannot update password here pls go to /update-password"))
 
@@ -42,55 +36,16 @@ exports.edit_profile = catchAsync(async (req, res, next) => {
     })
 })
 
-exports.delete_account = catchAsync(async (req, res, next) => {
+exports.delete_my_account = catchAsync(async (req, res, next) => {
     await User.findByIdAndUpdate(req.user.id, { active: false });
 
-    res.status(204).json({
+    res.status(200).json({
         status: "success",
-        data: null
+        data: "your account is delete successfully"
     })
 })
 
-exports.get_user = catchAsync(async (req, res) => {
-    const user = await User.findById(req.params.id);
-
-    res.status(500).json({
-        status: "success",
-        data: {
-            user
-        }
-    })
-})
-
-exports.create_user = catchAsync(async (req, res) => {
-    const users = await User.find();
-
-    res.status(500).json({
-        status: "success",
-        data: {
-            users
-        }
-    })
-})
-
-exports.update_user = catchAsync(async (req, res) => {
-    const users = await User.find();
-
-    res.status(500).json({
-        status: "success",
-        data: {
-            users
-        }
-    })
-})
-
-exports.delete_user = catchAsync(async (req, res, next) => {
-    const user = await User.findByIdAndDelete(req.params.id);
-
-    if(!user) return next(new AppError("user is not found with this ID", 404));
-
-    res.status(500).json({
-        status: "success",
-        message: "delete successfully"
-    })
-})
+exports.get_all_users = factory.get_all(User)
+exports.get_user = factory.get_one(User)
+exports.update_user = factory.update_one(User)
+exports.delete_user = factory.delete_one(User)

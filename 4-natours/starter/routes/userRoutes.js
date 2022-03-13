@@ -3,20 +3,30 @@ const router = express.Router();
 const userController = require("./../controllers/userController")
 const authController = require("./../controllers/authController")
 
+
+// register & authentication
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 
+// managing password
 router.post("/forget-password", authController.forget_password);
 router.patch("/reset-password/:token", authController.reset_password);
-router.patch("/update-password", authController.protect, authController.update_password);
 
-router.patch("/edit-profile", authController.protect, userController.edit_profile);
-router.delete("/delete-account", authController.protect, userController.delete_account);
+router.use(authController.protect)
+
+router.patch("/update-password", authController.update_password);
+
+// about current login user
+router.get("/get-my-account", userController.get_my_account, userController.get_user);
+router.patch("/update-my-account", userController.update_my_account);
+router.delete("/delete-my-account", userController.delete_my_account);
+
+router.use(authController.restrict_to("admin"));
 
 router
     .route("/")
-    .get(authController.protect, userController.get_all_users)
-    .post(userController.create_user)
+    .get(userController.get_all_users)
+    // .post(userController.create_user)
 
 router
     .route("/:id")
