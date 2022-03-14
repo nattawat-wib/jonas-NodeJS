@@ -69,6 +69,8 @@ exports.webhook_checkout = (req, res, text) => {
     let event;
 
     console.log("req.headers", req.headers)
+    console.log("stripe-signature", req.headers["stripe-signature"])
+    console.log("signature", signature)
     
     try {
         event = stripe.webhooks.constructEvent(
