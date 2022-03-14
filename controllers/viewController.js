@@ -69,3 +69,10 @@ exports.update_account_data = catchAsync(async (req, res) => {
         user: updated_user
     })
 })
+
+exports.alert = (req, res, next) => {
+    const { alert } = req.query;
+    if(alert === "booking") res.locals.lert = "Your booking was successful!"
+
+    next()
+}
