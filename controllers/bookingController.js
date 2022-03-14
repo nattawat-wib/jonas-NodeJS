@@ -80,6 +80,9 @@ exports.webhook_checkout = (req, res, text) => {
     console.log("event", event)
 
     } catch (e) {
+        console.log("e", e)
+        console.log("error", e.message)
+
         return res.status(400).send(`Webhook error: ${e.message}`)
     }
 
