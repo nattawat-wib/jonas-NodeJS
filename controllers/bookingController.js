@@ -52,11 +52,15 @@ exports.get_checkout_session = catchAsync(async (req, res, next) => {
 // })
 
 const create_booking_checkout = async session => {
+    console.log(1)
+    console.log("session", session)    
     const tour = session.client_reference_id;
+    console.log(2)
     const user = await User.findOne({ email: session.customer_email }).id;
+    console.log(3)
     const price = session.line_items[0].amount / 100;
+    console.log(4)
 
-    console.log("session", session)
     console.log("tour", tour)
     console.log("user", user)
     console.log("price", price)
@@ -75,8 +79,6 @@ exports.webhook_checkout = (req, res, text) => {
             process.env.SPRITE_WEBHOOK_SECRET
         );
             
-    console.log("event", event)
-
     } catch (e) {
         console.log("e", e)
         console.log("error", e.message)
