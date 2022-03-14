@@ -2,7 +2,6 @@ const Tour = require("./../model/tourModel");
 const User = require("./../model/userModel");
 const Booking = require("./../model/bookingModel");
 const AppError = require("./../utils/appError");
-const apiFeatures = require("./../utils/apiFeatures");
 const catchAsync = require("./../utils/catchAsync");
 
 exports.get_overview = catchAsync(async (req, res) => {

@@ -3,7 +3,6 @@ const Tour = require("../model/tourModel");
 const Booking = require("../model/bookingModel");
 
 const AppError = require("../utils/appError");
-const apiFeatures = require("../utils/apiFeatures");
 const catchAsync = require("../utils/catchAsync");
 const factory = require("./handlerFactory");
 
