@@ -56,7 +56,7 @@ app.use(hpp({
     whitelist: ["duration", "ratingsQuantity", "ratingsQuantity", "maxGroupSize", "difficulty", "price"]
 }));
 
-app.use(compressor())
+app.use(compression())
 
 app.use("/", viewRouter)
 app.use("/api/v1/tours", tourRouter)
