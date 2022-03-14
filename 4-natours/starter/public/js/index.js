@@ -13,7 +13,6 @@ const book_btn = document.getElementById("book-tour");
 const mapBox = document.getElementById("map");
 if(mapBox) {
     const locations = JSON.parse(mapBox.dataset.locations);
-    console.log(locations)
     display_map(locations)
 }
 

@@ -63,9 +63,6 @@ exports.get_my_account = (req, res, next) => {
 } 
 
 exports.update_my_account = catchAsync(async (req, res, next) => {
-    // console.log(req.file)
-    // console.log(req.body)
-
     // 1) Error if user try to edit password in this route 
     if(req.body.password || req.body.passwordConfirm) return next(new AppError("cannot update password here pls go to /update-password"))
 

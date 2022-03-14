@@ -10,7 +10,6 @@ export const update_setting = async (data, type) => {
             url: `/api/v1/users/${url}`,
             data
         })
-        console.log("res", res)
 
         if(res.data.status === "success") {
             show_alert("success", `${type.toUpperCase()} Update successfully`);
