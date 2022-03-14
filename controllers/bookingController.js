@@ -56,6 +56,7 @@ const create_booking_checkout = async session => {
     const user = await User.findOne({ email: session.customer_email }).id;
     const price = session.line_items[0].amount / 100;
 
+    console.log("session", session)
     console.log("tour", tour)
     console.log("user", user)
     console.log("price", price)
@@ -67,15 +68,19 @@ exports.webhook_checkout = (req, res, text) => {
     const signature = req.headers["stripe-signature"];
     let event;
 
+    console.log("req.headers", req.headers)
+    
     try {
         event = stipe.webhooks.constructEvent(
             req.body, 
             signature, 
             process.env.SPRITE_WEBHOOK_SECRET
         );
+            
+    console.log("event", event)
 
     } catch (e) {
-        return res.stauts(400).send(`Webhook error: ${e.message}`)
+        return res.status(400).send(`Webhook error: ${e.message}`)
     }
 
     if(event.type === "checkout.session.completed") {
