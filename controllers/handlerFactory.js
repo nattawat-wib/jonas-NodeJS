@@ -1,6 +1,6 @@
 const catchAsync = require("./../utils/catchAsync")
 const AppError = require("./../utils/appError")
-const API_features = require("./../utils/apiFeatures");
+const API_features = require("../utils/apiFeatures(fix)");
 
 exports.get_all = Model => catchAsync(async (req, res, next) => {
     // to allow nested get review on tour
