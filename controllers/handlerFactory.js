@@ -1,22 +1,22 @@
 const catchAsync = require("./../utils/catchAsync")
 const AppError = require("./../utils/appError")
-const API_features = require("./../utils/apifeatures");
+// const API_features = require("./../utils/apifeatures");
 
 exports.get_all = Model => catchAsync(async (req, res, next) => {
-    // to allow nested get review on tour
-    let filter = {}
-    if(req.params.tour_id) filter = { tour: req.params.tour_id }
+    // // to allow nested get review on tour
+    // let filter = {}
+    // if(req.params.tour_id) filter = { tour: req.params.tour_id }
 
-    const features = new API_features(Model.find(filter), req.query).filter().sort().limitFields().paginate();
-    // const docs = await features.db_query.explain();
-    const docs = await features.db_query;
+    // const features = new API_features(Model.find(filter), req.query).filter().sort().limitFields().paginate();
+    // // const docs = await features.db_query.explain();
+    // const docs = await features.db_query;
 
     res.status(200).json({
         status: "success",
-        result: docs.length,
-        data: {
-            data: docs
-        }
+        // result: docs.length,
+        // data: {
+        //     data: docs
+        // }
     })
 })
 
