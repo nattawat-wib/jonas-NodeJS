@@ -15,7 +15,8 @@ exports.get_checkout_session = catchAsync(async (req, res, next) => {
     // 2) create checkout session
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
-        success_url: `${req.protocol}://${req.get("host")}/?tour=${req.params.tour_id}&user=${req.user.id}&price=${tour.price}`,
+        // success_url: `${req.protocol}://${req.get("host")}/?tour=${req.params.tour_id}&user=${req.user.id}&price=${tour.price}`,
+        success_url: `${req.protocol}://${req.get("host")}/my-tours`,
         cancel_url: `${req.protocol}://${req.get("host")}/tour/${tour.slug}`,
         customer_email: req.user.email,
         client_reference_id: req.params.tour_id,
@@ -40,16 +41,45 @@ exports.get_checkout_session = catchAsync(async (req, res, next) => {
     })
 })
 
-exports.create_booking_checkout = catchAsync(async (req, res, next) => {
-    const { tour, user, price } = req.query;
+// exports.create_booking_checkout = catchAsync(async (req, res, next) => {
+//     const { tour, user, price } = req.query;
 
-    if(!tour && !user && !price) return next();
+//     if(!tour && !user && !price) return next();
         
+//     await Booking.create({ tour, user, price });
+
+//     res.redirect(req.originalUrl.split("?")[0]);
+// })
+
+const create_booking_checkout = async session => {
+    const tour = session.client_reference_id;
+    const user = await User.findOne({ email: session.customer_email }).id;
+    const price = session.line_items[0].amount / 100;
+
     await Booking.create({ tour, user, price });
+}
 
-    res.redirect(req.originalUrl.split("?")[0]);
-})
+exports.webhook_checkout = (req, res, text) => {
+    const signature = req.headers["stripe-signature"];
+    let event;
 
+    try {
+        event = stipe.webhooks.constructEvent(
+            req.body, 
+            signature, 
+            process.env.SPRITE_WEBHOOK_SECRET
+        );
+
+    } catch (e) {
+        return res.stauts(400).send(`Webhook error: ${e.message}`)
+    }
+
+    if(event.type === "checkout.session.completed") {
+        create_booking_checkout(event.data.object)
+    }
+
+    res.status(200).json({ received: true })
+}
 
 exports.create_booking = factory.create_one(Booking);
 exports.get_booking = factory.get_one(Booking);
