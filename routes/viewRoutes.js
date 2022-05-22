@@ -8,7 +8,7 @@ router.use(viewController.alert);
 
 router.get("/", authController.isLoggedIn, viewController.get_overview);
 router.get("/tour/:slug", authController.isLoggedIn, viewController.get_tour);
-// router.get("/sing-up", viewController.get_login_form)
+router.get("/sing-up", viewController.get_login_form)
 
 router.get("/login", authController.isLoggedIn, viewController.get_login_form);
 router.get("/account", authController.protect, viewController.get_account);
